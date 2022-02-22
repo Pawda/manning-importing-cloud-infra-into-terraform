@@ -14,6 +14,18 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+// access state of aws workspace from s3
+data "terraform_remote_state" "this" {
+  backend = "s3"
+
+  config = {
+    bucket = "eu02-iq-tfstate"
+    key = "poc/4.1/aws"
+    region = "eu-west-1"
+}
+}
+
+
 // create 100 users
 module "users" {
   source = "./modules/cloudesk-user/"
@@ -26,4 +38,12 @@ module "users" {
   providers = {
     aws = aws
   }
+}
+
+output "user_from_another_space" {
+  value = data.terraform_remote_state.this.outputs.user_names
+}
+output "user_arn_from_another_space" {
+  value = data.terraform_remote_state.this.outputs.user_arns
+  sensitive = true
 }
